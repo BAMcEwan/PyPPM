@@ -11771,7 +11771,15 @@ class MomsDataSet:
 
     def get_colourpicker(self, active_colours):
         '''
-            colorpicker gui for slice and mollweide_gui
+            Colourpicker GUI. Has a dropdown to select number of colours active in picker, and 12 paired color and range pickers.
+
+            Parameters
+            ----------
+            active_colours: number of active colours to have upon intialization of the pickers
+
+            Returns
+            -------
+            array of colours, array of ranges, number of colours selected, colourpicker GUI
         '''
         colour0 = widgets.ColorPicker(concise=False, value='blue', disabled=False, layout=widgets.Layout(width='150px'))
         colour1 = widgets.ColorPicker(concise=False, value='white', disabled=False, layout=widgets.Layout(width='150px'))
@@ -11853,6 +11861,21 @@ class MomsDataSet:
             [range0, range1, range2, range3, range4, range5, range6, range7, range8, range9, range10, range11], colour_select, colourPicker
 
     def slice_plot(self, dump, quantity, direction, vmin, vmax, log, slice_index, colours, ranges, num_colours, size, ifig, interpolation):
+        '''
+            Slice plot, used to draw the plot for the Slice GUI
+
+            Parameters
+            ----------
+            All parameters here are passed from the controls or intial parameters passed in from the slice_gui function below.
+            - dump, quantity, vmin, vmax, log, slice_index are from controls in Slice GUI
+            - colours, ranges, num_colours are from controls in the Colourpicker GUI
+            - size, ifig, interpolation are passed into the Slice GUI on intialization
+
+            Returns
+            -------
+            [vmin, vmax]: min and max ranges of the plot, used in Slice GUI to update the control values if we are in a case
+                where that is required
+        '''
         cmap = self.build_cmap(colours, ranges, num_colours)
         values = self.get(quantity, dump)
         x, y, z = self.get_cgrid()
@@ -11906,6 +11929,19 @@ class MomsDataSet:
         return [vmin, vmax]
 
     def slice_gui(self, size=8, ifig=123, interpolation='kaiser'):
+        '''
+            Slice GUI.
+
+            Parameters
+            ----------
+            size: determines the size of the canvas which the plot is displayed, default to 8
+            ifig: determines the figure number which the plot will be labelled, defualt to 123
+            interpolation: determines the interpolation to use when calculating the plot
+
+            Returns
+            -------
+            Nothing, displays GUI on call
+        '''
         dump_min, dump_max = self.get_dump_list()[0], self.get_dump_list()[-1]
         dump_mean = int(2*(-dump_min + dump_max)/3.)
         self.slice_gui_range_update = True
@@ -12067,6 +12103,18 @@ class MomsDataSet:
         display(ui, output)
 
     def get_mollweide_data(self, dump, radius, quantity):
+        '''
+            Does the calculations required for
+
+            Parameters
+            ----------
+            All parameters here are passed from the controls, see mollweide_gui function
+
+            Returns
+            -------
+            [vmin, vmax]: min and max ranges of the plot, used in Slice GUI to update the control values if we are in a case
+                where that is required
+        '''
         constants = {
             'atomicnoH': 1.,
             'atomicnocld': self._rprofset.get('atomicnocld', fname=0),
@@ -12112,6 +12160,20 @@ class MomsDataSet:
         }
 
     def mollweide_plot(self, quantity, log, vmin, vmax, colour_select, colours, ranges, ifig):
+        '''
+            Mollweide plot, used to draw the plot for the Mollweide GUI
+
+            Parameters
+            ----------
+            All parameters here are passed from the controls or intial parameters passed in from the mollweide_gui function below.
+            - quantity, log, vmin, vmax are from controls in Slice GUI
+            - colours, ranges, colour_select are from controls in the Colourpicker GUI
+            - ifig is passed into the Mollweide GUI on intialization
+
+            Returns
+            -------
+            Nothing
+        '''
         plot_val = self.mollweide_data['plot_val']
         mollweide_plot = self.mollweide_fig.add_axes([0.1, 0.2, 0.88, 0.88], projection='mollweide')
         mollweide_plot.grid("True")
@@ -12144,6 +12206,19 @@ class MomsDataSet:
         pl.show(ifig)
 
     def mollweide_gui(self, rad_def=-1, rad_range=[0,-1], size=10, ifig=124):
+        '''
+            Mollweide GUI.
+
+            Parameters
+            ----------
+            rad_def, rad_range: used to fix max radius bug, see code below
+            size: determines the size of the canvas which the plot is displayed, default to 10
+            ifig: determines the figure number which the plot will be labelled, defualt to 124
+
+            Returns
+            -------
+            Nothing, displays GUI on call
+        '''
         self.mollweide_data_update = False
         dump_min, dump_max = self.get_dump_list()[0], self.get_dump_list()[-1]
         dump_mean = int(2*(-dump_min + dump_max)/3.)
